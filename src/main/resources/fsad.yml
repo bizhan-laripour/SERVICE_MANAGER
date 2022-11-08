@@ -1,0 +1,116 @@
+version: '3.9'
+services:
+  eureka-peer1:
+    image: registry.fakour.net/fakour/clarity/eureka-server:server79
+    container_name: eureka-peer1
+    hostname: eureka-peer1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    ports:
+      - 8761:8761
+    depends_on:
+      config-server:
+        condition: service_healthy
+    environment:
+      JAVA_OPTS: " -Xms200M -Xmx800M"
+      SPIRNG_PROFILES_ACTIVE: peer1
+      SERVER_PORT: 8761
+      LOGGING_FILE_PATH: '/app/log'
+      #      eureka username and password
+      SPRING_SECURITY_USER_NAME: 'eurekaUser'
+      SPRING_SECURITY_USER_PASSWORD: '{cipher}10e132f3f531354ec628397f706bfa0f75fa812f4b0759d064bf9dbd0c36d5f5'
+      #      config user name and password
+      SPRING_CLOUG_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUG_CONFIG_USERNAME: '{cipher}c2d015253d296d874d918cae8b904a36e9fb783402c5a6c2de662da434b7e494'
+      SPRING_CLOUG_CONFIG_PASSWORD: '{cipher}6099774756a8182e0514c12c35804b461892a75db96b8ac0eb0999ed4a5f158f'
+
+
+  eureka-peer2:
+    image: registry.fakour.net/fakour/clarity/eureka-server:server79
+    container_name: eureka-peer2
+    hostname: eureka-peer2
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    ports:
+      - 8762:8762
+    depends_on:
+      config-server:
+        condition: service_healthy
+    environment:
+      JAVA_OPTS: " -Xms200M -Xmx800M"
+      SPIRNG_PROFILES_ACTIVE: peer2
+      SERVER_PORT: 8762
+      LOGGING_FILE_PATH: '/app/log'
+      #      eureka username and password
+      SPRING_SECURITY_USER_NAME: 'eurekaUser'
+      SPRING_SECURITY_USER_PASSWORD: '{cipher}10e132f3f531354ec628397f706bfa0f75fa812f4b0759d064bf9dbd0c36d5f5'
+      #      config user name and password
+      SPRING_CLOUG_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUG_CONFIG_USERNAME: '{cipher}c2d015253d296d874d918cae8b904a36e9fb783402c5a6c2de662da434b7e494'
+      SPRING_CLOUG_CONFIG_PASSWORD: '{cipher}6099774756a8182e0514c12c35804b461892a75db96b8ac0eb0999ed4a5f158f'
+
+#  keycloak-sso:
+#    image: registry.fakour.net/fakour/clarity/keycloak-sso:server79
+#    container_name: key-cloak-spring
+#    restart: unless-stopped
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#    ports:
+#      - 5556:5556
+#    environment:
+#      KEYCLOAK.AUTH-SERVER-URL: "http://192.168.11.1634:3000/auth"
+
+  keycloak:
+    image: registry.fakour.net/fakour/jboss/keycloak:16.1.1
+    container_name: iam-keycloak
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: 123!@#qwe
+    ports:
+      - 3000:8080
+
+  #Config-Server
+  config-server:
+    image: registry.fakour.net/fakour/clarity/config-server:server79
+    container_name: config-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    ports:
+      - 8888:8888
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/login" ]
+      interval: 8s
+      timeout: 5s
+      retries: 100
+    environment:
+      JAVA_OPTS: " -Xms200M -Xmx800M"
+      ENCRYPT_KEY: "SecretKeyVeryImportatnt"
+      SERVER_PORT: 8888
+      LOGGING_FILE_PATH: '/app/log'
+      SPRING_CLOUG_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://cloner:Aa123456@gitlab.fakour.net/clarity-next-generation/config-repo.git
+      SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT-LABEL: local-development
+      SPRING_CLOUG_CONFIG_USERNAME: '{cipher}c2d015253d296d874d918cae8b904a36e9fb783402c5a6c2de662da434b7e494'
+      SPRING_CLOUG_CONFIG_PASSWORD: '{cipher}6099774756a8182e0514c12c35804b461892a75db96b8ac0eb0999ed4a5f158f'
+      SPRING_SECURITY_USER_NAME: '{cipher}c2d015253d296d874d918cae8b904a36e9fb783402c5a6c2de662da434b7e494'
+      SPRING_SECURITY_USER_PASSWORD: '{cipher}6099774756a8182e0514c12c35804b461892a75db96b8ac0eb0999ed4a5f158f'
+
+
+
+
+
+
+
+
+
